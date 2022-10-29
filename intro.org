@@ -1,0 +1,198 @@
+* MTG
+** Introduction:
+*** This is an overview of the rules of Magic: The Gathering. It's not supposed to teach how to play the game, just an overall explanation of the basic mechanics that would need to be implemented for an MTG-like game.
+*** The game was originally released in 1993, so it's mature and tested. Expansions with new cards have been consistently released at least once a year since then, so there would be no shortage of cards and mechanics.
+*** It's important to note that, despite the basic rules of the game (which themselves make a huge manual), each card can have it's own rules that bend the overall rules of the game.
+**** Just as an extreme example, there's actually a really old card that stops the main game, starts a new one, and then returns to the main one. That's just to show that cards, despite being akin to data, each have their own rules and behavior, making them very suited to be implemented as objects.
+** Basic structure:
+*** In terms of time, the game is turn-based, meaning players alternate taking actions. However, the term "turn" means a different thing in MTG, with turns being divided into "steps" in which each player gets "priority". In this case, "priority" would be closer to what "turn" means in other games.
+*** In terms of space, the game is divided in multiple zones. Cards exist within a zone, and each zone has it's own rules and behaviors as well.
+*** Cards, themselves, have both attributes, such as cost, power(damage), toughness(life) and type, and behavior, making them very suitable to be implemented as objects
+*** Players get one of each zone, and also have certain attributes such as life and mana pool (mana is the basic resource used to play cards)
+*** Other relevant concepts include:
+**** Effects:
+***** Cards that represent spells go to the stack as effects.
+***** Instead of remaining in the battlefield, they do something and then go straight to the graveyard
+**** Permanents:
+***** Represent creatures, lands and other concrete objects controlled by a player
+***** Exist on the battlefield
+**** Tokens:
+***** Permanents that are created by other cards, meaning they don't have a corresponding card. Can only exist in the battlefield and, if they would change zones, they cease to exist instead
+**** Counters:
+***** Represent added attributes on a card or player.
+***** Some counters will change some value, such as the power/toughness of a creature permanent, while others give the card a new property, such as counters that grant an ability to a card.
+***** Players can also have counters such as poison counters, which make the player lose if they get a certain ammount.
+**** Tapping:
+***** Certain permanent cards can be tapped (turned 90 degrees) to activate an ability or take an action
+****** For example, when a land generates mana, or when a creature attacks, they have to tap
+****** Certain cards can also have abilities that require tapping
+****** By default, tapped cards don't untap until the untap phase, at the beginning of each turn, meaning that once a permanent gets tapped, it can't tap again until the next turn
+****** There are abilities and effects that untap permanents
+** Turns and priority:
+*** Each player gets a turn in sequence
+*** Turns are divided in phases and steps:
+**** Some things can only happen in a specific step:
+***** There's an untep step at the beginning of each turn, when all tapped permanents controlled by the player untap (unless an effect changes that)
+***** Then comes the draw phase, when the player draws
+***** There's a combat phase, when the player can attack with their creatures
+*** Only the player who has priority can take an action
+**** Certain steps don't give priority to any player, meaning certain things happen automatically (ex: untap step, draw step)
+**** Other steps allow players to play cards and activate abilities
+***** Usually, after the player of the turn takes an action, the other player gets priority
+***** There are very specific rules on when/how each player gets priority, it's way too complicated to explain here
+*** Turns and priority dictate how the game state changes and how/when players can take actions or when things will happen automatically
+** Zones:
+***** Every card exists in a zone
+*** The most important zones are:
+**** Library:
+***** Ordered, hidden from all players
+***** Each player's deck, from where they draw cards.
+***** When a player draws, they put the top card of their library into their hand
+***** Common effects allow players to:
+****** See the top card(s) of a library
+****** Put the top card(s) of a library on the bottom
+****** Search for a card in a library (and shuffle it afterwards)
+**** Stack:
+***** Ordered, visible to all players
+***** Where effects go in order to be resolved
+***** Works in FILO order, meaning the last effect to be added happens first
+***** When cards get played, they go to the stack.
+****** If it's an effect card, it's effect happens, and then the card goes to the graveyard
+****** If it's a permanent card, it goes to the stack before it becomes a permanent
+***** Abilities of cards also go to the stack
+***** There's only one stack, regardless of how many players.
+**** Hand:
+***** Unordered, visible only to the owner
+***** The cards drawn by each player
+***** By default, a player draws one card in each of their turns
+***** By default, a player can have up to 7 cards in their hand.
+****** At the end of each turn, if a player has more than the limit, they have to discard.
+***** Those are the cards each player can play (unless an effect allows them to play from other zones)
+***** Common effects allow (or force) players to:
+****** Discard one or more cards
+****** Change or remove the limit on how many cards they can have
+****** Look at another player's hand
+****** Draw extra cards
+**** Battlefield:
+***** Unordered, visible to all players, can contain an arbitrary ammount of permanents
+***** Permanents reside there
+***** When a card leaves the battlefield, it usually goes to the graveyard
+***** When a token leaves the battlefield, it ceases to exist
+**** Graveyard:
+***** Ordered, visible to all players, can contain an arbitrary ammount of cards
+***** Where effect cards go after leaving the stack
+***** Where permanent cards go after being destroyed in the battlefield
+***** Common effects:
+****** Return a card from the graveyard to another zone
+****** Exile cards from a graveyard
+****** Do something based on how many cards or how many cards of a certain type exist on the graveyard
+**** Exile:
+***** Unordered, visible to all players, can contain an arbitrary ammount of cards
+***** Represent cards there are removed from the game
+***** A few effects allow cards to come back from exile or check if a certain card is in exile, but they're rare
+**** Command:
+***** A special zone that exists in certain game modes
+***** This zone represents things that a player should always have access to, or that cannot be interacted with in any way
+** Types:
+*** Cards have types, that more or less determine their function and some of their behavior
+*** Most effects that affect cards are restricted to certain types of card
+*** The most relevant types are:
+**** Permanent types:
+***** Land
+****** Their main function is usually to generate mana, the basic resource of the game
+****** Can also have other effects
+***** Creature
+****** Usually serve to attack other players or defend from them
+***** Artifact
+****** Represent inanimate objects that a player possesses
+****** Can have all types of effects
+***** Enchantment
+****** Represent magical constructs created by the player
+****** Similar to artifacts, can have all kinds of effects
+***** Planeswalker
+****** A peculiar concept, represents an allied player
+****** Has abilities that a player can activate
+****** Has loyalty, similar to player's life.
+******* Using abilities can generate or consume loyalty
+******* When loyalty reaches 0, the planeswalker "dies"
+****** Players can attack a planeswalker controlled by a player instead of the player.
+**** Spell types:
+***** Sorcery:
+****** Spells that go to the stack as an effect, then go to the graveyard
+***** Instant:
+****** Similar to sorceries, but can be played whenever a player has priority, meaning it can be cast in response to another effect going on the stack
+****** Due to how the stack works, an instant spell will be resolved before the effect it's responding to
+*** Cards can have more than one type, such as "enchantment creature" or "artifact land"
+**** A card with more than one type can be targeted by effects limited to either of it's types
+*** There are supertypes and subtypes
+**** Supertypes:
+***** Usually have special rules, such as:
+****** Basic: Allows the inclusion of more than four copies in the deck
+****** Legendary: Only one of each legendary permanent can exist in the battlefield for each player
+******* If a player casts a legendary permanent that already exists, one of them has to be sacrificed
+***** Subtypes:
+****** Usually regard some lore-related attribute of a card
+****** Examples:
+******* Creature cards can have one or more races and/or classes
+******** Certain effects only affect creatures of a certain subtype
+******* Enchantment cards can have the aura subtype, meaning they get attached to a creature and get destroyed if the creature leaves the battlefield
+******* Like types, if a creature has multiple subtypes, they can be affected by any of them
+** Finally:
+*** There are many rules and there's no point in trying to implement all of them. It can and should be done incrementally
+*** The most important, in my opinion, would be to:
+**** Implement zones and their behavior
+**** Implement a card class/type/structure and it's mechanics
+***** This includes allowing for an arbitrary ammount of rules in each card
+**** Implement players and their interface
+***** The zones for each player
+***** Player attributes such as life, mana, counters, etc
+***** Interaction between the actual player and the player object
+**** Implement turns and timing
+***** Basically, the sequence of what, when and how things should happen
+***** The overall rules/behavior of the game
+***** Things that can and should happen automatically, as well as prompting the players for actions when they get priority
+*** Things I think should be implemented as objects:
+**** The Game:
+***** Would contain players and zones and dictate the overall behavior of the game
+**** Players:
+***** Interface between the actual players and the Game object
+**** Zones:
+***** Would contain cards, permanents and effects
+**** Cards:
+***** Abstract entities representing the definition of cards
+***** There should be a Card class/type/structure that allows the definition of any card with it's attributes and effects
+***** If it's a permanent card, it would contain the method to create that permanent on the battlefield
+***** If it's a spell card, it would contain the method to put those effects into the stack
+***** If it's a permanent that creates an effect when it's cast, it would contain both
+**** Permanents (including tokens)
+***** If it's a permanent card, it would contain a reference to the card that created it
+***** If it's a token, the reference field would be empty
+***** Would contain the actual fields to represent card types, abilities, etc
+**** Effects
+***** Effects should be their own object since they can have targets and variable attributes
+***** Similar to permanents, an effect represented by a card would contain a reference to that card, so it can go to the graveyard after it resolves
+* Object orientation in C
+** Basically, the equivalent of a class would be:
+*** A header (.h) file containing the equivalent of an abstract public interface to that class, including the name of the type and their methods. If needed, getters and setters instead of public variables
+*** A source (.c) file containing the actual implementation of a class, as well as any private variables or methods.
+*** This is to give us flexibility when changing each component, the C equivalent of encapsulation
+** I have no clue how to do anything similar to inheritance. So, instead, we can use composition
+*** Say, instead of the "Battlefield class" inheriting from the "Zone class", the "Battlefield class" could have an instance of the "Zone class" as one of it's members. If a Zone method would be overriden, Battlefield simply implements another method with the same name. Otherwise, it the Battlefield method simply calls the equivalent Zone method.
+*** 
+** Polymorphim/dynamic dispatch would be hard, but not complicated
+*** Say we need a [.move_card(Card *c, Zone *z)] method:
+**** Each object could have a type/class tag, like dynamic typing
+**** There could be a generic function void "move_card(Zone *self, Card *c, Zone *z)"
+***** It checks the type tag in self, and if it's Battlefield, it calls the specific function "void move_card_Battlefield(Zone *self, Card *c, Zone *z)"
+**** Alternatively, there could be a generic "call_function(Object *self, char *method_name, void **arguments)
+***** Each "class" would have it's "interface, a dictionary of function pointers with method names as keys
+***** There could also be a table with method names as columns, class names as rows and function pointers as values
+**** One way or another, functions would have really long names (since C doesn't allow anonymous functions), including both the method name and the class name
+** Garbage collection would be really easy. Cards would last in memory until the game ends, and permanents and effects without a corresponding card would be freed as soon as they leave the battlefield or stack, respectively.
+** If anyone knows how to do concurrency, we could go that crazy.
+** Finally:
+*** Those are just general ideas, I've never tried any of them.
+*** I really feel like a game like MTG is very suited to an object oriented style of programming.
+*** The cards themselves are available online, I know of a program called Magic Workstation that uses it. It would require some knowledge in whichever format they use (JSON, XML, whatever). We can learn when/if it becomes necessary and just write the cards manually in the mean time
+*** Again, we don't really have to stick to MTG, we can do our own thing.
+
